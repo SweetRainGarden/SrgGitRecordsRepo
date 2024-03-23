@@ -1,0 +1,164 @@
+#!/usr/bin/env bash
+# grammar: diff: -> add diff in readme
+# diff: todo -> add todo in readme
+#
+
+pwd_dir=$(pwd)
+repo_dir_path="${pwd_dir}"
+if [ -n "$1" ]; then
+
+  if grep -q "diff:" <<<"$1"; then
+    # shellcheck disable=SC2001
+
+    msg=$(sed "s/diff://g" <<<"$1")
+    if grep -q "todo" <<<"$msg"; then
+      msg=$(sed "s/todo//g" <<<"$msg")
+      hasTodo="true"
+    fi
+    addDiffToReadme="true"
+  else
+    msg="$1"
+  fi
+
+fi
+
+cd "$repo_dir_path" || return
+
+# ticket_id_1="test-1111"
+# ticket_id_2="test-2222"
+# ticket_id_3="test-3333"
+# commit_type_feat="feat:"
+# commit_type_ci="ci:"
+
+ticket_id_1=""
+ticket_id_2=""
+ticket_id_3=""
+commit_type_feat="feat:"
+commit_type_ci=""
+
+
+# for machine_name in {"mobile_app_machine","mobile_app_machine_1","mobile_app_machine_2","mobile_app_machine_3","mobile_app_machine_5","mobile_app_machine_6","mobile_app_machine_7","mobile_app_machine_8"}; do
+for machine_name in {"","","ubuntu-latest",""}; do
+
+  if [[ -z "${machine_name}" ]]; then
+    echo "empty machine_name"
+    continue
+  fi
+
+  current_time=$(date +"%m_%d-%H.%M.%S")
+
+#  start_branch="release/0.5.0"
+ start_branch="develop"
+  # start_branch="release/1.1.1"
+
+  local_branch=$(git rev-parse --abbrev-ref HEAD)
+
+  if [ "$local_branch" == "${start_branch}" ]; then
+    test_branch="test/${current_time}"
+    git checkout -b "${test_branch}"
+  else
+    test_branch="$local_branch"
+    git fetch
+    git pull --rebase
+  fi
+
+  mkdir -p docs
+
+  machine=$(grep -m 1 'runs-on' ./.github/workflows/test_srg_gaction_changelog.yml | cut -d "," -f 2 | cut -d "]" -f 1 | sed 's/ //g')
+  sed -i '' "s/, ${machine}/, ${machine_name}/g" ./.github/workflows/test_srg_gaction_changelog.yml
+  machine="${machine_name}"
+
+  ci_trigger_txt="./docs/test_ci_change.txt"
+  touch "$ci_trigger_txt"
+
+    
+  if [[ -z $(git status -s) ]]; then
+    echo "no local file changes, generate new commit by add time stamp to test_ci_change.txt"
+    git add .
+    branch_name=$(git rev-parse --abbrev-ref HEAD)
+    touch "$ci_trigger_txt"
+    echo "${branch_name} -> ${current_time}" >>"$ci_trigger_txt"
+    git add "$ci_trigger_txt"
+    git commit -m "$commit_type_feat commit only for test_ci_change: ${machine}, ${current_time}, test ticket id: $ticket_id_2"
+  else
+    echo "has local file changes, add it and commit it"
+    for((i=0;i<2;i++)); do
+      echo "${i}"
+      echo "${branch_name} -> ${i} -- ${current_time}" >>"$ci_trigger_txt"
+      git add .
+      if [[ -z "${msg}" ]]; then
+        echo "empty msg string"
+        git commit -m "$commit_type_feat commit only for test_ci_change: ${machine}, ${current_time}, test ticket id: $ticket_id_3"
+      else
+        git commit -m "-> ${i} --> $commit_type_ci $msg, test ticket id: $ticket_id_3"
+      fi
+    done
+    
+
+  fi
+
+
+#feat|fix|ci|chore|docs|test|new_api|break_api|deprecate_api
+
+  git push origin "${test_branch}"
+  sleep 1
+  if [[ -z "${msg}" ]]; then
+    pr_link=$(gh pr create --base "$start_branch" --title "run on ${machine}, ${current_time}" --body "${commit_type_feat} Merge PR by script: $ticket_id_1")
+  else
+    pr_link=$(gh pr create --base "$start_branch" --title "$msg $ticket_id_2" --body "${commit_type_feat}Merge PR by script $ticket_id_3")
+  fi
+
+  sleep 3
+  echo "pr: ${pr_link}"
+  # gh pr merge "${pr_link}" -r -d
+  # gh pr merge "${pr_link}" -r -d --admin
+  gh pr merge "${pr_link}" -m --admin
+  #   gh pr merge "${pr_link}" -r -d --auto
+  git checkout "$start_branch"
+  git pull --rebase
+
+  commit_id=$(git rev-parse HEAD)
+
+  #if msg contains diff:
+  #git last commit id
+
+  if [[ -z "${addDiffToReadme}" ]]; then
+    echo "do not add diff to readme file"
+  else
+    echo "do add diff to readme file"
+    if [[ "${hasTodo}" == "true" ]]; then
+      echo "- [ ] [$msg](${pr_link}/files)" >>README.md
+    else
+      echo "- [$msg](${pr_link}/files)" >>README.md
+    fi
+
+    git add README.md
+    git commit -m "docs: add diff link for commit: $commit_id"
+    git push
+  fi
+done
+
+
+# curl -X POST \
+#   -H "Accept: application/vnd.github.everest-preview+json" \
+#   -H "Authorization: token <your_token>" \
+#   --data '' \
+#   https://api.github.com/repos/<your_username>/<your_repo
+
+# 
+# "target_pr_branch_name": "custom_branch",
+#trigger a github action workflow
+cur_json_body=$(
+  cat <<-_EOT_
+{"event_type": "deploy_files_by_repository_dispatch", "client_payload": { "cherry_pick_branch":"develop", "target_pr_base_branch_name":"release/2.42.0", "source_repo_name": "EzywPluginNigulpAndroid", "source_repo_owner_id": "wyzelabs-inc", "source_branch_name": "release/2.38.2", "target_repo_list_file": "target_repo_list_1.txt", "source_repository_file_list": "source_files_relative_path.txt" }}
+_EOT_
+)
+
+echo "cur_json_body: ------> ${cur_json_body}"
+# curl \
+#   -X POST \
+#   -H "Accept: application/vnd.github+json" \
+#   -H "Authorization: token ${GH_TOKEN}" \
+#   https://api.github.com/repos/wyzelabs-inc/WyzeAppReleaseRepo/dispatches \
+#   -d "${cur_json_body}"
+
