@@ -6,7 +6,12 @@ import kotlin.test.assertTrue
 class CommonGreetingTest {
 
     @Test
-    fun testExample() {
+    fun testExample1() {
         assertTrue(Greeting().greet().contains("Hello"), "Check 'Hello' is mentioned")
     }
+
+//    @Test
+//    fun testExample2() {
+//        assertTrue(Greeting().greet().contains("xx"), "Check 'Hello' is mentioned")
+//    }
 }
