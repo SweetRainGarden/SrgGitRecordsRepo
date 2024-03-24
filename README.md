@@ -1,7 +1,7 @@
 # SrgGitRecordsRepo - Git Bisect Test Record Repository for the [Bisect Tool Repo]([https://github.com/SweetRainGarden/SrgGitRecordsRepo](https://github.com/SweetRainGarden/SrgGactionGittoolsRepo/actions))
 
 ## Overview
-The `SrgGitRecordsRepo` serves as a test environment for demonstrating and validating the Automated Git Bisect GitHub Action. It contains a series of commits, including both good and bad ones, to simulate a project with a history of changes where specific commits introduce errors or bugs.
+The `SrgGitRecordsRepo` serves as a test environment for demonstrating and validating the Automated Git Bisect GitHub Action. It contains a series of commits, including both good and bad ones, to simulate a project with a history of changes where specific commits introduce errors or bugs. It's a KMP sample project.
 
 ## Purpose
 This repository is specifically designed to:
