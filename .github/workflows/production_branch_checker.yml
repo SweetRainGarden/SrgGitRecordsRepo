@@ -1,0 +1,87 @@
+name: Production Branch Checker
+env:
+  CURRENT_REPO: EmangroDippaKmpProject
+  BASH_DIRECTORY: ".github/workflows"
+on:
+  push:
+    paths-ignore:
+      - 'README.md'
+      - '**/*.podspec'
+      - 'docs/**/*.*'
+    tags-ignore:
+      - '**'
+    branches-ignore:
+      - 'auto/*'
+      # - 'develop'
+      - 'infra'
+      - 'release/*'
+  merge_group:
+  pull_request:
+    paths-ignore:
+      - 'README.md'
+      - '**/*.podspec'
+      - 'docs/**/*.*'
+    branches:
+      - 'develop'
+      - 'infra'
+      - 'release/*'
+      - 'ci/*'
+      - 'ci/*/*'
+    types: [ closed, opened, reopened ]
+jobs:
+  production_branch_checker:
+    runs-on: [ self-hosted, macOS ]
+    permissions:
+      contents: read
+      packages: write
+      security-events: write
+    steps:
+      - name: "BBB -> Basic --> 1: Checkout ${{env.CURRENT_REPO}}"
+        uses: actions/checkout@v4.1.1
+        with:
+          path: "${{env.CURRENT_REPO}}"
+          fetch-depth: '0'
+
+      - name: "BBB -> Basic --> 2: Set up all Android build Env"
+        uses: SweetRainGarden/SrgGactionEnvsetupsAndroid@develop
+
+      - name: "CCC -> Gradle --> 1: ./gradlew test"
+        working-directory: "${{env.CURRENT_REPO}}"
+        run: |
+          ./gradlew test
+
+          
+      - name: "CCC -> Gradle --> 2: ./gradlew check"
+        working-directory: "${{env.CURRENT_REPO}}"
+        run: |
+          ./gradlew check
+                                 
+          
+      - name: "CCC -> Gradle --> 3: ./gradlew build"
+        working-directory: "${{env.CURRENT_REPO}}"
+        run: |
+          ./gradlew build
+                                 
+      - name: "CCC -> Gradle --> 4: ./gradlew assemble"
+        id: step_assemble_apk
+        working-directory: "${{env.CURRENT_REPO}}"
+        run: |
+          ./gradlew assemble
+
+      - name: "DDD -> Archive --> 1: Find Artifact"
+        working-directory: "${{env.CURRENT_REPO}}"
+        if: steps.step_assemble_apk.outcome == 'success'
+        run: |
+          search_directory="$(pwd)/composeApp/build/outputs/apk"
+          artifact_path=$(bash "./${{env.BASH_DIRECTORY}}/find_first_file_by_suffix" --artifact_suffix "apk" --search_directory "${search_directory}")
+          artifact_name="${artifact_path##*/}"
+          echo "ARTIFACT_AAR_NAME=${artifact_name}" >> $GITHUB_ENV
+          echo "ARTIFACT_AAR_PATH=${artifact_path}" >> $GITHUB_ENV  
+
+      - name: "DDD -> Archive --> 2: Archive Artifact to Github"
+        if: steps.step_assemble_apk.outcome == 'success'
+        uses: actions/upload-artifact@v4.3.1
+        continue-on-error: true
+        with:
+          name: "${{env.ARTIFACT_AAR_NAME}}"
+          path: "${{env.ARTIFACT_AAR_PATH}}"
