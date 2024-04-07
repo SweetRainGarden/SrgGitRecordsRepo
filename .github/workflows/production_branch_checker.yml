@@ -72,7 +72,7 @@ jobs:
         working-directory: "${{env.CURRENT_REPO}}"
         if: steps.step_assemble_apk.outcome == 'success'
         run: |
-          search_directory="$(pwd)/composeApp/build/outputs/apk"
+          search_directory="$(pwd)/androidApp/build/outputs/apk"
           artifact_path=$(bash "./${{env.BASH_DIRECTORY}}/find_first_file_by_suffix" --artifact_suffix "apk" --search_directory "${search_directory}")
           artifact_name="${artifact_path##*/}"
           echo "ARTIFACT_AAR_NAME=${artifact_name}" >> $GITHUB_ENV
