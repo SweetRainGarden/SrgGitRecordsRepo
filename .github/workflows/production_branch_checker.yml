@@ -30,7 +30,7 @@ on:
     types: [ closed, opened, reopened ]
 jobs:
   production_branch_checker:
-    runs-on: [ self-hosted, macOS ]
+    runs-on: [ 'macos-14' ]
     permissions:
       contents: read
       packages: write
