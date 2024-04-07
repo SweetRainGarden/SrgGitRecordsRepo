@@ -12,6 +12,6 @@ class CommonGreetingTest {
 
     @Test
     fun testExample2() {
-        assertTrue(Greeting().greet().contains("xx"), "Check 'Hello' is mentioned")
+        assertTrue(Greeting().greet().contains("Check"), "Check 'Hello' is mentioned")
     }
 }
