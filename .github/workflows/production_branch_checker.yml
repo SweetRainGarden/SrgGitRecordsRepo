@@ -49,12 +49,18 @@ jobs:
         working-directory: "${{env.CURRENT_REPO}}"
         run: |
           ./gradlew test
-                                
+
           
-      - name: "CCC -> Gradle --> 3: ./gradlew build"
-        working-directory: "${{env.CURRENT_REPO}}"
-        run: |
-          ./gradlew build
+      #      - name: "CCC -> Gradle --> 2: ./gradlew check"
+      #        working-directory: "${{env.CURRENT_REPO}}"
+      #        run: |
+      #          ./gradlew check
+      #
+      #
+      #      - name: "CCC -> Gradle --> 3: ./gradlew build"
+      #        working-directory: "${{env.CURRENT_REPO}}"
+      #        run: |
+      #          ./gradlew build
                                  
       - name: "CCC -> Gradle --> 4: ./gradlew assemble"
         id: step_assemble_apk
