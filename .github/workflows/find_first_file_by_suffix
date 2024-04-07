@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+##############################################################################
+##
+##  fnd the first file by suffix and search directory.
+##  use cases: find arr, aab, apk absolute path.
+##
+##############################################################################
+
+# pre-check for essential parameters
+while [ $# -gt 0 ]; do
+	if [[ $1 == *"--"* ]]; then
+		v="${1/--/}"
+		declare -r "$v"="$2"
+	fi
+	shift
+done
+required_parameters=("artifact_suffix" "search_directory")
+for parameter in "${required_parameters[@]}"; do
+	parameter_value=$(eval echo \$"$parameter")
+	if [ -z "$parameter_value" ]; then
+		echo "please input parameter --$parameter"
+		exit 1
+	fi
+done
+
+artifact_suffix_regex="*.${artifact_suffix}"
+
+artifact_abs_path=""
+
+#!!! beware of that file name should not has any space.
+#https://github.com/koalaman/shellcheck/wiki/SC2044
+# shellcheck disable=SC2044
+for i in $(find "${search_directory}" -name "${artifact_suffix_regex}"); do
+  artifact_abs_path="$i"
+  break
+done
+
+echo "${artifact_abs_path}"
