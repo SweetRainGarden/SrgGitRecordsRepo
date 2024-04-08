@@ -19,5 +19,3 @@ The `SrgGitRecordsRepo` is used as a target repository in the Automated Git Bise
 ## Contributing
 While this repository serves a specific purpose, suggestions for enhancing its utility for git bisect demonstrations are welcome.
 
-## License
-This repository is made available under the MIT License.
