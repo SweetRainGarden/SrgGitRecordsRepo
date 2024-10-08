@@ -39,7 +39,7 @@ jobs:
       security-events: write
     steps:
       - name: "BBB -> Basic --> 1: Checkout ${{env.CURRENT_REPO}}"
-        uses: actions/checkout@v4.1.1
+        uses: actions/checkout@v4.2.1
         with:
           path: "${{env.CURRENT_REPO}}"
           fetch-depth: '0'
