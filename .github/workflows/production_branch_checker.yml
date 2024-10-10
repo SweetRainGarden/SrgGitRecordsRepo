@@ -82,7 +82,7 @@ jobs:
 
       - name: "DDD -> Archive --> 2: Archive Artifact to Github"
         if: steps.step_assemble_apk.outcome == 'success'
-        uses: actions/upload-artifact@v4.3.1
+        uses: actions/upload-artifact@v4.4.3
         continue-on-error: true
         with:
           name: "${{env.ARTIFACT_AAR_NAME}}"
